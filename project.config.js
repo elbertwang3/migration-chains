@@ -9,7 +9,7 @@ module.exports = {
     {
       fileId: "12h26xeeykmi379AvbsJn5Og9LxNT9DXAAbxHkrMFXi0",
       type: "sheet",
-      name: "census",
+      name: "data",
       dataDir: "src/data",
     },
     {
@@ -26,7 +26,7 @@ module.exports = {
    */
   dataMutators: {
     // the function name should match one of the `name` values in `files`
-    census(originalData) {
+    data(originalData) {
       const sf = originalData.census.filter(
         (d) => d.state_fips == "06" && d.county_fips == "075"
       );

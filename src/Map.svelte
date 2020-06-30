@@ -10,7 +10,6 @@
   export let tracts;
   export let census;
   // export let projection;
-  $: console.log(width);
 
   const margin = { top: 0, right: 0, bottom: 0, left: 0 };
   $: chartWidth = width - margin.left - margin.right;
@@ -18,8 +17,7 @@
 
   let selectedTract = null;
   const features = feature(tracts, tracts.objects["tl_2019_06_tract"]);
-  $: console.log(chartWidth);
-  $: console.log(features);
+
   $: projection = geoConicConformal()
     .parallels([37 + 4 / 60, 38 + 26 / 60])
     .rotate([120 + 30 / 60], 0)

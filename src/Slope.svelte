@@ -1,8 +1,10 @@
 <script>
+  import Select from "svelte-select";
   import { beforeUpdate } from "svelte";
   import { select } from "d3-selection";
   import { scaleLinear, scaleOrdinal } from "d3-scale";
   import { axisLeft, axisBottom } from "d3-axis";
+  import { metros } from "./data/data.json";
 
   export let width = 100;
   export let height = 100;
@@ -21,9 +23,22 @@
     .tickSize(-chartWidth)
     // .tickPadding(tickSize * 1.25)
     .ticks(5);
+
+  let selectedMetro = {
+    label: "San Francisco",
+    value: "sf",
+  };
 </script>
 
 <style>
+  .dropdown {
+    max-width: 300px;
+    margin: auto;
+  }
+  .dropdown-title {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
   .slope {
     width: 100%;
     /* height: 700px; */
@@ -54,6 +69,10 @@
   </g>
 </svg> -->
 
+<div class="dropdown">
+  <div class="dropdown-title">Select a metro area</div>
+  <Select items={metros} bind:selectedValue={selectedMetro} />
+</div>
 <div class="slope">
   <div class="image">
     <div class="title">C0-C1</div>

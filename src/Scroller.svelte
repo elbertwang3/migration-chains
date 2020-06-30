@@ -1,12 +1,16 @@
 <script>
+  import { onMount } from "svelte";
   import Scroller from "@newswire/scroller";
   import Select from "svelte-select";
   import Copy from "./Copy.svelte";
   import Map from "./Map.svelte";
   // import Slope from "./Slope.svelte";
   import { geoConicConformal } from "d3-geo";
-  import { census } from "./data/census.json";
+  import { census, metros, rounds } from "./data/data.json";
+
   import sf from "./data/sf.json";
+  console.log(metros);
+  console.log(rounds);
 
   const elements = {
     text: Copy,
@@ -25,88 +29,7 @@
     label: "San Francisco",
     value: "sf",
   };
-
-  const rounds = [
-    {
-      label: "first",
-      value: "c0c1",
-    },
-    {
-      label: "second",
-      value: "c1c2",
-    },
-    {
-      label: "third",
-      value: "c2c3",
-    },
-    {
-      label: "fourth",
-      value: "c3c4",
-    },
-    {
-      label: "fifth",
-      value: "c4c5",
-    },
-    {
-      label: "sixth",
-      value: "c5c6",
-    },
-    {
-      label: "seventh",
-      value: "c6c7",
-    },
-  ];
-
-  const metros = [
-    {
-      label: "Atlanta",
-      value: "atl",
-    },
-    {
-      label: "Boston",
-      value: "bos",
-    },
-    {
-      label: "Chicago",
-      value: "chi",
-    },
-    {
-      label: "Dallas",
-      value: "dfw",
-    },
-    {
-      label: "Washington, D.C.",
-      value: "dc",
-    },
-    {
-      label: "Denver",
-      value: "den",
-    },
-    {
-      label: "Houston",
-      value: "hou",
-    },
-    {
-      label: "Minneapolis",
-      value: "min",
-    },
-    {
-      label: "New York City",
-      value: "nyc",
-    },
-    {
-      label: "Philadelphia",
-      value: "phil",
-    },
-    {
-      label: "Seattle",
-      value: "sea",
-    },
-    {
-      label: "San Francisco",
-      value: "sf",
-    },
-  ];
+  console.log(selectedMetro);
 
   const projections = {
     sf: geoConicConformal()
@@ -117,37 +40,40 @@
   // const projection = geoConicConformal()
   //   .parallels([37 + 4 / 60, 38 + 26 / 60])
   //   .rotate([120 + 30 / 60], 0);
-  const scroller = new Scroller({
-    scenes: document.querySelectorAll(".scene"),
+
+  onMount(() => {
+    const scroller = new Scroller({
+      container: document.querySelector(".scroll-scenes"),
+      scenes: document.querySelectorAll(".scene"),
+      offset: 0,
+    });
+
+    // the `enter` event is triggered every time a scene crosses the threshold
+    scroller.on("scene:enter", (d) => {
+      console.log("entering");
+      console.log(d);
+      selectedRound = rounds[d.index];
+      d.element.classList.add("active");
+    });
+
+    // the `exit` event is triggered every time a scene exits the threshold
+    scroller.on("scene:exit", (d) => {
+      d.element.classList.remove("active");
+    });
+
+    scroller.on("init", () => {
+      console.log("Everything is ready to go!");
+    });
+
+    // starts up the IntersectionObserver
+    scroller.init();
   });
-  console.log(scroller);
-  console.log(document.querySelectorAll(".scene"));
-
-  // Scroller has a tiny event emitter embedded in it!
-
-  // the `enter` event is triggered every time a scene crosses the threshold
-  scroller.on("scene:enter", (d) => {
-    console.log("entering");
-    d.element.classList.add("active");
-  });
-
-  // the `exit` event is triggered every time a scene exits the threshold
-  scroller.on("scene:exit", (d) => {
-    d.element.classList.remove("active");
-  });
-
-  scroller.on("init", () => {
-    console.log("Everything is ready to go!");
-  });
-
-  // starts up the IntersectionObserver
-  scroller.init();
 </script>
 
 <style>
   .scroller {
     background-color: white;
-    margin: 1rem auto;
+    margin: 1rem auto 2rem auto;
     position: relative;
   }
   .scroll-scenes {
@@ -184,18 +110,16 @@
     font-size: 1.25rem;
     position: relative;
     margin: auto;
-    padding: 1rem 0 0 0;
   }
   .dropdown {
-    width: 300px;
-    padding: 1rem 0 0 0;
-    margin: 0rem auto 1rem auto;
+    display: inline-block;
     text-align: start;
   }
-
-  .dropdown-title {
-    margin-bottom: 0.5rem;
-    font-weight: 600;
+  .dropdown-round {
+    width: 120px;
+  }
+  .dropdown-metro {
+    width: 200px;
   }
 
   .graphic {
@@ -236,9 +160,16 @@
 
 <div class="scroller">
   <div class="scroll-graphic">
-    <div class="dropdown">
-      <div class="dropdown-title">Select a metro area</div>
-      <Select items={metros} bind:selectedValue={selectedMetro} />
+    <div class="input-text">
+      This is the
+      <div class="dropdown dropdown-round">
+        <Select items={rounds} bind:selectedValue={selectedRound} />
+      </div>
+      round of the migration chain for
+      <div class="dropdown dropdown-metro">
+        <Select items={metros} bind:selectedValue={selectedMetro} />
+      </div>
+      .
     </div>
     <div class="graphic">
       <div
