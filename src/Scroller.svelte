@@ -147,15 +147,13 @@
 <style>
   .scroller {
     background-color: white;
-    margin: 3rem auto;
+    margin: 1rem auto;
     position: relative;
-    /* display: grid;
-    grid-template-columns: 320px minmax(0, 1fr);
-    grid-gap: 4rem; */
   }
   .scroll-scenes {
     /* grid-column-start: 1;
     grid-row-start: 1; */
+    position: relative;
     width: 300px;
     margin: auto;
     z-index: 2;
@@ -173,6 +171,12 @@
   }
 
   .scroll-graphic {
+    position: sticky;
+    top: 0rem;
+    height: 100vh;
+    display: grid;
+    grid-template-rows: 86px minmax(0, 1fr);
+    grid-gap: 1rem;
   }
 
   .input-text {
@@ -183,34 +187,26 @@
     padding: 1rem 0 0 0;
   }
   .dropdown {
-    max-width: 400px;
-    margin: 0 auto 4rem auto;
+    width: 300px;
+    padding: 1rem 0 0 0;
+    margin: 0rem auto 1rem auto;
     text-align: start;
   }
-
-  /* .dropdown-round {
-    width: 120px;
-  }
-
-  .dropdown-metro {
-    width: 200px;
-  } */
 
   .dropdown-title {
     margin-bottom: 0.5rem;
     font-weight: 600;
   }
 
-  .chart-title {
-  }
-
   .graphic {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) 200px;
+    grid-gap: 2rem;
     /* display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
     grid-gap: 4rem; */
   }
   .map {
-    max-width: 100%;
     /* width: 200px;
     margin: 0 auto 1rem auto; */
     /* position: absolute;
@@ -232,53 +228,37 @@
     font-weight: 600;
   }
   img {
-    width: 100%;
+    display: block;
+    height: 100%;
+    margin: auto;
   }
 </style>
 
-<!-- <div class="scroller">
-  <div class="scroll-graphic"> -->
-<div class="dropdown">
-  <div class="dropdown-title">Select a metro area</div>
-  <div class="dropdown dropdown-metro">
-    <Select items={metros} bind:selectedValue={selectedMetro} />
-  </div>
-</div>
-<div class="graphic">
-  <!-- <div class="map" bind:clientWidth={mapWidth} bind:clientHeight={mapHeight}>
-    <Map
-      width={mapWidth}
-      height={mapWidth}
-      tracts={sf}
-      {census}
-      projection{projections[selectedMetro.value]} />
-  </div> -->
-  <div
-    class="slope"
-    bind:clientWidth={slopeWidth}
-    bind:clientHeight={slopeHeight}>
-    <!-- <Slope {width} {height} /> -->
-    <div class="image">
-      <div class="title">C0-C1</div>
-      <img src="slope.png" />
+<div class="scroller">
+  <div class="scroll-graphic">
+    <div class="dropdown">
+      <div class="dropdown-title">Select a metro area</div>
+      <Select items={metros} bind:selectedValue={selectedMetro} />
     </div>
-    <div class="image">
-      <div class="title">C1-C2</div>
-      <img src="slope.png" />
+    <div class="graphic">
+      <div
+        class="map"
+        bind:clientWidth={mapWidth}
+        bind:clientHeight={mapHeight}>
+        <Map
+          width={mapWidth}
+          height={mapHeight}
+          tracts={sf}
+          {census}
+          projection{projections[selectedMetro.value]} />
+      </div>
+      <div class="arc">
+        <img src="arc.png" />
+      </div>
     </div>
-    <div class="image">
-      <div class="title">C2-C3</div>
-      <img src="slope.png" />
-    </div>
-    <div class="image">
-      <div class="title">C3-C4</div>
-      <img src="slope.png" />
-    </div>
-  </div>
-</div>
 
-<!-- </div> -->
-<!-- <div class="scroll-scenes">
+  </div>
+  <div class="scroll-scenes">
     {#each value.scenes as scene}
       <div class="scene">
         <div class="scene-wrapper">
@@ -287,6 +267,6 @@
           {/each}
         </div>
       </div>
-    {/each} -->
-<!-- </div>
-</div> -->
+    {/each}
+  </div>
+</div>

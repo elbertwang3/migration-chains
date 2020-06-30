@@ -52,6 +52,14 @@
     {
       "type": "text",
       "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec quis lacus vitae lacus congue suscipit. Nulla tincidunt urna vel nulla fermentum maximus. Interdum et malesuada fames ac ante ipsum primis in faucibus. Nulla imperdiet enim a scelerisque maximus. Mauris scelerisque mattis orci, eu congue neque sagittis sed."
+    },
+    {
+      "type": "slope",
+      "value": {}
+    },
+    {
+      "type": "text",
+      "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec quis lacus vitae lacus congue suscipit. Nulla tincidunt urna vel nulla fermentum maximus. Interdum et malesuada fames ac ante ipsum primis in faucibus. Nulla imperdiet enim a scelerisque maximus. Mauris scelerisque mattis orci, eu congue neque sagittis sed."
     }
   ]
 }

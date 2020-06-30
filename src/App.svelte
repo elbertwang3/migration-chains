@@ -1,10 +1,12 @@
 <script>
   import Copy from "./Copy.svelte";
   import Scroller from "./Scroller.svelte";
+  import Slope from "./Slope.svelte";
   import text from "./data/text.json";
   const elements = {
     text: Copy,
     scroller: Scroller,
+    slope: Slope,
   };
 </script>
 
