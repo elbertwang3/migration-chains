@@ -11,9 +11,11 @@
   // import sf from "./data/sf.json";
   // console.log(metros);
   // console.log(rounds);
-  let chainData = null;
-  let tractData = null;
-  let censusData = null;
+  let chainData;
+  let tractData;
+  let censusData;
+  let currProjection;
+  let mapData;
 
   const elements = {
     text: Copy,
@@ -44,7 +46,7 @@
     boston: geoConicConformal()
       .parallels([41 + 17 / 60, 41 + 29 / 60])
       .rotate([70 + 30 / 60, 0]),
-    illinois: geoTransverseMercator().rotate([88 + 20 / 60, -36 - 40 / 60]),
+    chicago: geoTransverseMercator().rotate([88 + 20 / 60, -36 - 40 / 60]),
     dallas: geoConicConformal()
       .parallels([32 + 8 / 60, 33 + 58 / 60])
       .rotate([98 + 30 / 60, 0]),
@@ -74,7 +76,6 @@
       .parallels([37 + 4 / 60, 38 + 26 / 60])
       .rotate([120 + 30 / 60], 0),
   };
-  let currProjection = projections.sf;
 
   // const projection = geoConicConformal()
   //   .parallels([37 + 4 / 60, 38 + 26 / 60])
@@ -92,6 +93,13 @@
       console.log("entering");
       console.log(d);
       selectedRound = rounds[d.index];
+      mapData = {
+        chains: chainData[selectedRound.value],
+        tracts: tractData,
+        census: censusData,
+        projection: currProjection,
+        round: selectedRound.value,
+      };
       d.element.classList.add("active");
     });
 
@@ -110,12 +118,20 @@
 
   async function fetchData() {
     const chains = await fetch(`./data/chains/${selectedMetro.value}.json`);
-    chainData = await chains.json();
     const tracts = await fetch(`./data/tracts/${selectedMetro.value}.json`);
-    tractData = await tracts.json();
     const census = await fetch(`./data/census/${selectedMetro.value}.json`);
+    chainData = await chains.json();
+    tractData = await tracts.json();
     censusData = await census.json();
     currProjection = projections[selectedMetro.value];
+    mapData = {
+      chains: chainData[selectedRound.value],
+      tracts: tractData,
+      census: censusData,
+      projection: currProjection,
+      round: selectedRound.value,
+    };
+
     //await tick();
   }
 
@@ -125,10 +141,11 @@
     await fetchData();
   });
   afterUpdate(async () => {
+    console.log("after update");
     if (selectedMetro.value != currMetro.value) {
       console.log("new metro");
-      await fetchData();
       currMetro = selectedMetro;
+      await fetchData();
     }
   });
 </script>
@@ -243,14 +260,7 @@
         class="map"
         bind:clientWidth={mapWidth}
         bind:clientHeight={mapHeight}>
-        <Map
-          width={mapWidth}
-          height={mapHeight}
-          chains={chainData && chainData[selectedRound.value]}
-          tracts={tractData}
-          census={censusData}
-          projection={currProjection}
-          round={selectedRound.value} />
+        <Map width={mapWidth} height={mapHeight} data={mapData && mapData} />
       </div>
       <div class="arc">
         <img src="arc.png" />

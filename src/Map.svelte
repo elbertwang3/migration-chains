@@ -9,12 +9,7 @@
 
   export let width = 200;
   export let height = 200;
-  export let chains;
-  export let tracts;
-  export let census;
-  export let projection;
-  export let round;
-  console.log(round);
+  export let data;
 
   const margin = { top: 0, right: 0, bottom: 0, left: 0 };
   $: chartWidth = width - margin.left - margin.right;
@@ -32,7 +27,8 @@
   let filteredConnections;
   let centroids;
 
-  $: if (chains && tracts && census) {
+  $: if (data) {
+    const { chains, tracts, census, projection, round } = data;
     // console.log(tracts);
     // console.log(tracts);
     features = feature(tracts, tracts.objects[Object.keys(tracts.objects)[0]]);
@@ -60,8 +56,6 @@
       .range(schemeBrBG[6]);
 
     chainDict = group(chains, (d) => d[round.substring(0, 2)]);
-    console.log(censusDict);
-    console.log(chainDict);
 
     radiusScale = scaleSqrt()
       .domain([0, max(Array.from(chainDict.values()), (d) => d.length)])
@@ -121,7 +115,7 @@
             class:active={selectedTract && selectedTract.properties.name === d.properties.name}
             d={svgPath(d)}
             stroke="#e0e0e0"
-            fill={censusDict[d.properties.GEOID] ? colorScale(censusDict[d.properties.GEOID]) : 'none'}
+            fill={censusDict[d.properties.GEOID] ? colorScale(censusDict[d.properties.GEOID]) : '#d3d3d3'}
             on:mouseover={() => handleMouseOver(d)} />
           <!-- {#if chainDict.get(d.properties.GEOID)}
             <circle
