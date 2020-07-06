@@ -188,8 +188,8 @@
   .graphic {
     width: 100%;
     display: grid;
-    grid-template-rows: minmax(0, 1fr) 200px;
-    grid-gap: 2rem;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    grid-gap: 1rem;
     /* display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
     grid-gap: 4rem; */
@@ -215,9 +215,12 @@
     text-align: center;
     font-weight: 600;
   }
+  .arc {
+    display: grid;
+    place-items: center;
+  }
   img {
-    display: block;
-    height: 100%;
+    width: 100%;
     margin: auto;
   }
 </style>
