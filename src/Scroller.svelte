@@ -1,20 +1,24 @@
 <script>
-  import { onMount } from "svelte";
+  import { onMount, beforeUpdate, afterUpdate } from "svelte";
   import Scroller from "@newswire/scroller";
   import Select from "svelte-select";
   import Copy from "./Copy.svelte";
   import Map from "./Map.svelte";
   // import Slope from "./Slope.svelte";
-  import { geoConicConformal } from "d3-geo";
-  import { census, metros, rounds } from "./data/data.json";
+  import { geoConicConformal, geoTransverseMercator } from "d3-geo";
+  import { metros, rounds } from "./data/data.json";
 
-  import sf from "./data/sf.json";
-  console.log(metros);
-  console.log(rounds);
+  // import sf from "./data/sf.json";
+  // console.log(metros);
+  // console.log(rounds);
+  let chainData = null;
+  let tractData = null;
+  let censusData = null;
 
   const elements = {
     text: Copy,
   };
+
   export let value;
   let mapWidth;
   let mapHeight;
@@ -29,19 +33,54 @@
     label: "San Francisco",
     value: "sf",
   };
+  let currMetro = {
+    label: "San Francisco",
+    value: "sf",
+  };
   console.log(selectedMetro);
 
   const projections = {
+    atlanta: geoTransverseMercator().rotate([84 + 10 / 60, -30]),
+    boston: geoConicConformal()
+      .parallels([41 + 17 / 60, 41 + 29 / 60])
+      .rotate([70 + 30 / 60, 0]),
+    illinois: geoTransverseMercator().rotate([88 + 20 / 60, -36 - 40 / 60]),
+    dallas: geoConicConformal()
+      .parallels([32 + 8 / 60, 33 + 58 / 60])
+      .rotate([98 + 30 / 60, 0]),
+    dc_metro: geoConicConformal()
+      .parallels([38 + 18 / 60, 39 + 27 / 60])
+      .rotate([77, 0]),
+    denver: geoConicConformal()
+      .parallels([38 + 27 / 60, 39 + 45 / 60])
+      .rotate([105 + 30 / 60, 0]),
+    houston: geoConicConformal()
+      .parallels([28 + 23 / 60, 30 + 17 / 60])
+      .rotate([99, 0]),
+    miami: geoTransverseMercator().rotate([81, -24 - 20 / 60]),
+    mpls: geoConicConformal()
+      .parallels([43 + 47 / 60, 45 + 13 / 60])
+      .rotate([94, 0]),
+    nyc: geoConicConformal()
+      .parallels([40 + 40 / 60, 41 + 2 / 60])
+      .rotate([74, 0]),
+    philadelphia: geoConicConformal()
+      .parallels([39 + 56 / 60, 40 + 58 / 60])
+      .rotate([77 + 45 / 60, 0]),
+    seattle: geoConicConformal()
+      .parallels([47 + 30 / 60, 48 + 44 / 60])
+      .rotate([120 + 50 / 60, 0]),
     sf: geoConicConformal()
       .parallels([37 + 4 / 60, 38 + 26 / 60])
       .rotate([120 + 30 / 60], 0),
   };
+  let currProjection = projections.sf;
 
   // const projection = geoConicConformal()
   //   .parallels([37 + 4 / 60, 38 + 26 / 60])
   //   .rotate([120 + 30 / 60], 0);
 
-  onMount(() => {
+  function setupScroller() {
     const scroller = new Scroller({
       container: document.querySelector(".scroll-scenes"),
       scenes: document.querySelectorAll(".scene"),
@@ -67,6 +106,30 @@
 
     // starts up the IntersectionObserver
     scroller.init();
+  }
+
+  async function fetchData() {
+    const chains = await fetch(`./data/chains/${selectedMetro.value}.json`);
+    chainData = await chains.json();
+    const tracts = await fetch(`./data/tracts/${selectedMetro.value}.json`);
+    tractData = await tracts.json();
+    const census = await fetch(`./data/census/${selectedMetro.value}.json`);
+    censusData = await census.json();
+    currProjection = projections[selectedMetro.value];
+    //await tick();
+  }
+
+  onMount(async () => {
+    console.log("on mount");
+    setupScroller();
+    await fetchData();
+  });
+  afterUpdate(async () => {
+    if (selectedMetro.value != currMetro.value) {
+      console.log("new metro");
+      await fetchData();
+      currMetro = selectedMetro;
+    }
   });
 </script>
 
@@ -123,6 +186,7 @@
   }
 
   .graphic {
+    width: 100%;
     display: grid;
     grid-template-rows: minmax(0, 1fr) 200px;
     grid-gap: 2rem;
@@ -179,9 +243,11 @@
         <Map
           width={mapWidth}
           height={mapHeight}
-          tracts={sf}
-          {census}
-          projection{projections[selectedMetro.value]} />
+          chains={chainData && chainData[selectedRound.value]}
+          tracts={tractData}
+          census={censusData}
+          projection={currProjection}
+          round={selectedRound.value} />
       </div>
       <div class="arc">
         <img src="arc.png" />

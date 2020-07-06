@@ -20,7 +20,7 @@ async function getData() {
   });
   const { dataMutators, files } = config;
   for (const file of files) {
-    const filepath = path.join("src/data", `${file.name}.json`);
+    const filepath = path.join(file.dataDir, `${file.name}.json`);
     const mutator =
       dataMutators && dataMutators[file.name]
         ? dataMutators[file.name]

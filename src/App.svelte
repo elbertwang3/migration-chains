@@ -2,7 +2,7 @@
   import Copy from "./Copy.svelte";
   import Scroller from "./Scroller.svelte";
   import Slope from "./Slope.svelte";
-  import text from "./data/text.json";
+  import text from "./text.json";
   const elements = {
     text: Copy,
     scroller: Scroller,
