@@ -39,7 +39,6 @@
     label: "San Francisco",
     value: "sf",
   };
-  console.log(selectedMetro);
 
   const projections = {
     atlanta: geoTransverseMercator().rotate([84 + 10 / 60, -30]),
@@ -90,11 +89,9 @@
 
     // the `enter` event is triggered every time a scene crosses the threshold
     scroller.on("scene:enter", (d) => {
-      console.log("entering");
-      console.log(d);
       selectedRound = rounds[d.index];
       mapData = {
-        chains: chainData[selectedRound.value],
+        chains: chainData,
         tracts: tractData,
         census: censusData,
         projection: currProjection,
@@ -125,7 +122,7 @@
     censusData = await census.json();
     currProjection = projections[selectedMetro.value];
     mapData = {
-      chains: chainData[selectedRound.value],
+      chains: chainData,
       tracts: tractData,
       census: censusData,
       projection: currProjection,
@@ -143,7 +140,6 @@
   afterUpdate(async () => {
     console.log("after update");
     if (selectedMetro.value != currMetro.value) {
-      console.log("new metro");
       currMetro = selectedMetro;
       await fetchData();
     }
@@ -159,6 +155,7 @@
   .scroll-scenes {
     /* grid-column-start: 1;
     grid-row-start: 1; */
+    pointer-events: none;
     position: relative;
     width: 300px;
     margin: auto;
@@ -204,14 +201,16 @@
 
   .graphic {
     width: 100%;
-    display: grid;
+    /* display: grid;
     grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-    grid-gap: 1rem;
+    grid-gap: 1rem; */
     /* display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
     grid-gap: 4rem; */
   }
   .map {
+    height: 100%;
+
     /* width: 200px;
     margin: 0 auto 1rem auto; */
     /* position: absolute;
@@ -262,9 +261,9 @@
         bind:clientHeight={mapHeight}>
         <Map width={mapWidth} height={mapHeight} data={mapData && mapData} />
       </div>
-      <div class="arc">
+      <!-- <div class="arc">
         <img src="arc.png" />
-      </div>
+      </div> -->
     </div>
 
   </div>
