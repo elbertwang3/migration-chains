@@ -8,15 +8,6 @@
   import { geoConicConformal, geoTransverseMercator } from "d3-geo";
   import { metros, rounds } from "./data/data.json";
 
-  // import sf from "./data/sf.json";
-  // console.log(metros);
-  // console.log(rounds);
-  let chainData;
-  let tractData;
-  let censusData;
-  let currProjection;
-  let mapData;
-
   const elements = {
     text: Copy,
   };
@@ -24,20 +15,17 @@
   export let value;
   let mapWidth;
   let mapHeight;
-  let slopeWidth;
-  let slopeHeight;
+  // let slopeWidth;
+  // let slopeHeight;
 
   let selectedRound = {
     label: "first",
     value: "c0c1",
   };
+
   let selectedMetro = {
-    label: "San Francisco",
-    value: "sf",
-  };
-  let currMetro = {
-    label: "San Francisco",
-    value: "sf",
+    label: "Seattle",
+    value: "seattle",
   };
 
   const projections = {
@@ -76,9 +64,7 @@
       .rotate([120 + 30 / 60], 0),
   };
 
-  // const projection = geoConicConformal()
-  //   .parallels([37 + 4 / 60, 38 + 26 / 60])
-  //   .rotate([120 + 30 / 60], 0);
+  $: promise = fetchData(selectedMetro.value);
 
   function setupScroller() {
     const scroller = new Scroller({
@@ -90,13 +76,6 @@
     // the `enter` event is triggered every time a scene crosses the threshold
     scroller.on("scene:enter", (d) => {
       selectedRound = rounds[d.index];
-      mapData = {
-        chains: chainData,
-        tracts: tractData,
-        census: censusData,
-        projection: currProjection,
-        round: selectedRound.value,
-      };
       d.element.classList.add("active");
     });
 
@@ -113,44 +92,36 @@
     scroller.init();
   }
 
-  async function fetchData() {
-    const chains = await fetch(`./data/chains/${selectedMetro.value}.json`);
-    const tracts = await fetch(`./data/tracts/${selectedMetro.value}.json`);
-    const census = await fetch(`./data/census/${selectedMetro.value}.json`);
-    chainData = await chains.json();
-    tractData = await tracts.json();
-    censusData = await census.json();
-    currProjection = projections[selectedMetro.value];
-    mapData = {
+  async function fetchData(metro) {
+    const chains = await fetch(`./data/chains/${metro}.json`);
+    const tracts = await fetch(`./data/tracts/${metro}.json`);
+    const census = await fetch(`./data/census/${metro}.json`);
+    const chainData = await chains.json();
+    const tractData = await tracts.json();
+    const censusData = await census.json();
+    const currProjection = projections[metro];
+    return {
       chains: chainData,
       tracts: tractData,
       census: censusData,
       projection: currProjection,
-      round: selectedRound.value,
     };
-
-    //await tick();
   }
 
   onMount(async () => {
     console.log("on mount");
     setupScroller();
-    await fetchData();
-  });
-  afterUpdate(async () => {
-    console.log("after update");
-    if (selectedMetro.value != currMetro.value) {
-      currMetro = selectedMetro;
-      await fetchData();
-    }
   });
 </script>
 
 <style>
   .scroller {
+    max-width: 1200px;
     background-color: white;
     margin: 1rem auto 2rem auto;
     position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
   }
   .scroll-scenes {
     /* grid-column-start: 1;
@@ -165,12 +136,15 @@
   .scene {
     padding-bottom: 100vh;
   }
+  .scene:first-child {
+    margin-top: 50vh;
+  }
 
   .scene-wrapper {
-    background-color: rgba(255, 255, 255, 0.9);
-    border: 1px solid #d3d3d3;
-    border-radius: 5px;
-    padding: 1rem;
+    /* background-color: rgba(255, 255, 255, 0.9); */
+    /* border: 1px solid #d3d3d3; */
+    /* border-radius: 5px; */
+    /* padding: 1rem; */
   }
 
   .scroll-graphic {
@@ -259,7 +233,13 @@
         class="map"
         bind:clientWidth={mapWidth}
         bind:clientHeight={mapHeight}>
-        <Map width={mapWidth} height={mapHeight} data={mapData && mapData} />
+        {#await promise then data}
+          <Map
+            width={mapWidth}
+            height={mapHeight}
+            {data}
+            round={selectedRound.value} />
+        {/await}
       </div>
       <!-- <div class="arc">
         <img src="arc.png" />

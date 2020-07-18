@@ -3,7 +3,7 @@
   import { geoPath } from "d3-geo";
   import { geoConicConformal } from "d3-geo";
   import { scaleQuantile, scaleSqrt, scaleLinear } from "d3-scale";
-  import { schemeBrBG, schemeRdYlGn } from "d3-scale-chromatic";
+  import { schemePurples } from "d3-scale-chromatic";
   import { max, group } from "d3-array";
   import { nest } from "d3-collection";
 
@@ -11,36 +11,36 @@
   export let width = 200;
   export let height = 200;
   export let data;
-  let chains;
-  let tracts;
-  let census;
+  export let round;
+  console.log(round);
 
   const margin = { top: 0, right: 0, bottom: 0, left: 0 };
   $: chartWidth = width - margin.left - margin.right;
   $: chartHeight = height - margin.top - margin.bottom;
 
-  let selectedTract = null;
+  let initialTract = "53033004100";
+  let selectedTracts = {};
+  // let selectedTracts = { c0c1: ["53033004100"] };
   let features;
   let svgPath;
   let colorScale;
-  // let radiusScale;
+  let radiusScale;
   let strokeScale;
   let censusDict;
-  // let chainDict;
+  let chainDict;
   let connections = {};
 
   let centroids;
-  let selectedChain = {
-    c0c1: "06075061500",
-    c1c2: "06075017601",
-    c2c3: "06001425104",
-    c3c4: "06001406000",
-  };
+  // let selectedChain = {
+  //   c0c1: "06075061500",
+  //   c1c2: "06075017601",
+  //   c2c3: "06001425104",
+  //   c3c4: "06001406000",
+  // };
 
   $: if (data && checkProps(data)) {
-    const { chains, tracts, census, projection, round } = data;
-    // console.log(tracts);
-    // console.log(tracts);
+    console.log("i am getting run again on state change");
+    const { chains, tracts, census, projection } = data;
     features = feature(tracts, tracts.objects[Object.keys(tracts.objects)[0]]);
     projection.fitExtent(
       [
@@ -62,22 +62,47 @@
     }, {});
     colorScale = scaleQuantile()
       .domain(Object.values(censusDict))
-      .range(schemeBrBG[7]);
-
-    // chainDict = group(chains, (d) => d[round.substring(0, 2)]);
-
-    // radiusScale = scaleSqrt()
-    //   .domain([0, max(Array.from(chainDict.values()), (d) => d.length)])
-    //   .range([0, chartWidth / 10]);
-    rounds.forEach((round) => {
-      connections[round] = nest()
-        .key((d) => `${d[round.substring(0, 2)]}-${d[round.substring(2, 4)]}`)
+      .range(schemePurples[7]);
+    // chainDict = group(chains[round], (d) => d[round.substring(0, 2)]);
+    // chainDict = nest()
+    //   .key((d) => `${d[round.substring(2, 4)]}`)
+    //   .rollup((v) => v.length)
+    //   .entries(
+    //     chains[round].filter((d) =>
+    //       selectedTracts[round].includes(d[round.substring(0, 2)])
+    //     )
+    //   );
+    rounds.forEach((round, i) => {
+      //selectedTracts[round] = chainDict.map((d) => d.key);
+      selectedTracts[round] = nest()
+        .key((d) => `${d[round.substring(2, 4)]}`)
         .rollup((v) => v.length)
-        .entries(chains[round])
-        .filter((d) => d.key.split("-")[0] == selectedChain[round]);
+        .entries(
+          chains[round].filter((d) => {
+            if (round == "c0c1") {
+              return d[round.substring(0, 2)] == initialTract;
+            } else {
+              return selectedTracts[rounds[i - 1]]
+                .map((d) => d.key)
+                .includes(d[round.substring(0, 2)]);
+            }
+          })
+        );
     });
+    // console.log(incomingTracts);
+    console.log(selectedTracts);
 
-    console.log(connections);
+    radiusScale = scaleSqrt()
+      .domain([1, max(selectedTracts[round], (d) => d.value)])
+      .range([2, 6]);
+    // rounds.forEach((round) => {
+    //   connections[round] = nest()
+    //     .key((d) => `${d[round.substring(0, 2)]}-${d[round.substring(2, 4)]}`)
+    //     .rollup((v) => v.length)
+    //     .entries(chains[round])
+    //     .filter((d) => d.key.split("-")[0] == selectedChain[round]);
+    // });
+
     // connections["c3c4"].forEach((connection) => {
     //   console.log(centroids);
     //   console.log(connection.key.split("-")[1]);
@@ -94,31 +119,17 @@
   }
 
   function handleMouseOver(d) {
-    console.log(d.properties.GEOID);
-    console.log(censusDict[d.properties.GEOID]);
-
-    // let incoming = connections[data.round].map((d) => d.key.split("-")[1]);
-    // if (incoming.includes(d.properties.GEOID)) {
-    //   console.log("getting inside");
+    //   console.log(d.properties.GEOID);
+    //   console.log(censusDict[d.properties.GEOID]);
     //   selectedChain[data.round] = d.properties.GEOID;
-    // }
-    selectedChain[data.round] = d.properties.GEOID;
-    //console.log(roundIndex);
-    //   selectedChain = {
-    //   c0c1: "06075061500",
-    //   c1c2: "06075030800",
-    //   c2c3: "06075061500",
-    //   c3c4: "06075061500",
-    // };
-    // selectedNabe = d;
   }
   function handleMouseOut(d) {
-    selectedChain = {
-      c0c1: "06075061500",
-      c1c2: "06075017601",
-      c2c3: "06001425104",
-      c3c4: "06001406000",
-    };
+    //   selectedChain = {
+    //     c0c1: "06075061500",
+    //     c1c2: "06075017601",
+    //     c2c3: "06001425104",
+    //     c3c4: "06001406000",
+    //   };
   }
 
   function checkProps(obj) {
@@ -134,6 +145,7 @@
   .tract {
     stroke: white;
     stroke-width: 0.1;
+    fill-opacity: 1;
     /* fill: none; */
     /* stroke: #333;
     stroke-width: 0.5; */
@@ -142,6 +154,11 @@
   .tract:hover {
     stroke: #333;
     stroke-width: 0.5;
+  }
+  .migration-circle {
+    fill: #ff9400;
+    fill-opacity: 0.5;
+    /* mix-blend-mode: multiply; */
   }
   .g-connection-round {
     opacity: 0;
@@ -166,7 +183,6 @@
         {#each features.features as d}
           <path
             class="tract"
-            class:active={selectedTract && selectedTract.properties.name === d.properties.name}
             d={svgPath(d)}
             stroke="#e0e0e0"
             fill={censusDict[d.properties.GEOID] ? colorScale(censusDict[d.properties.GEOID]) : '#d3d3d3'}
@@ -181,6 +197,16 @@
         {/each}
       {/if}
     </g>
+    {#if selectedTracts[round]}
+      <g class="g-migrations">
+        {#each selectedTracts[round] as d}
+          <circle
+            class="migration-circle"
+            r={radiusScale(d.value)}
+            transform={`translate(${centroids[d.key]})`} />
+        {/each}
+      </g>
+    {/if}
 
     <!-- <g class="g-migrations">
       {#if chainDict}
@@ -194,7 +220,7 @@
         {/each}
       {/if}
     </g> -->
-    <g class="g-connections">
+    <!-- <g class="g-connections">
       {#each Object.entries(connections) as [round, connections]}
         <g
           class={`g-connection-round${data.round == round ? ' active' : ''}${data.round > round ? ' background' : ''}`}>
@@ -210,7 +236,8 @@
           {/each}
         </g>
       {/each}
-    </g>
+    </g> -->
+
     <!-- 
     {#if selectedNabe}
       <text
