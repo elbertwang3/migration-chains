@@ -11,85 +11,7 @@ module.exports = {
     //   fileId: "12h26xeeykmi379AvbsJn5Og9LxNT9DXAAbxHkrMFXi0",
     //   type: "sheet",
     //   name: "data",
-    //   dataDir: "src/data",
-    // },
-    // {
-    //   fileId: "16GBUpb2vZ3lh6ZcWRgG3JyuUZfF1Yb9XwLzGwuw5c9I",
-    //   type: "sheet",
-    //   name: "atlanta",
-    //   dataDir: "public/data/chains",
-    // },
-    // {
-    //   fileId: "1Dlwvp2Dh8mXuntHwi5_aFpaEkTZ1_1n0Ir-d7duQGxQ",
-    //   type: "sheet",
-    //   name: "boston",
-    //   dataDir: "public/data/chains",
-    // },
-    // {
-    //   fileId: "10F-8abDb6nKNU_sfMr2xb-2zUbf7QMF-KzMbGB6Bx2k",
-    //   type: "sheet",
-    //   name: "chicago",
-    //   dataDir: "public/data/chains",
-    // },
-    // {
-    //   fileId: "1Yd0Z5GPO18vxd5Add7vus_3QR9dXjIc9COBYTvj6a8Y",
-    //   type: "sheet",
-    //   name: "dallas",
-    //   dataDir: "public/data/chains",
-    // },
-    // {
-    //   fileId: "1j5_7OJOp2GLPtkpjQNxR4OGuzJY5eKWJbSA2FHJUZtM",
-    //   type: "sheet",
-    //   name: "dc_metro",
-    //   dataDir: "public/data/chains",
-    // },
-    // {
-    //   fileId: "1Gvv8aQ5RZJguz56XBxLxcxguwN4eUYrM9k9c-0-H5Wc",
-    //   type: "sheet",
-    //   name: "denver",
-    //   dataDir: "public/data/chains",
-    // },
-    // {
-    //   fileId: "1jdpzSX2ck3BuKF120VZRa4crs4oyK7-chT8BF4ETH7E",
-    //   type: "sheet",
-    //   name: "houston",
-    //   dataDir: "public/data/chains",
-    // },
-    // {
-    //   fileId: "1IpL7ggGz0iyGLyHbo99TCihUpIJx_hH_5pM5gPfwIVU",
-    //   type: "sheet",
-    //   name: "miami",
-    //   dataDir: "public/data/chains",
-    // },
-    // {
-    //   fileId: "1K8V5AsFgbKAcir7NNw8nFCi0PXd3L20GCpB8Y8li_ns",
-    //   type: "sheet",
-    //   name: "mpls",
-    //   dataDir: "public/data/chains",
-    // },
-    // {
-    //   fileId: "1vnauq390j7AdKHk3Du3K6HI2jJg2FrstaKRIRMB1ncI",
-    //   type: "sheet",
-    //   name: "nyc",
-    //   dataDir: "public/data/chains",
-    // },
-    // {
-    //   fileId: "1PnItWH5SvB3f3xGle2gQ_rovXPqVsjQwJOx0xJP596s",
-    //   type: "sheet",
-    //   name: "philadelphia",
-    //   dataDir: "public/data/chains",
-    // },
-    // {
-    //   fileId: "1NN3K6ptD5yi1Tt-QS5_7lZ464aOG9qLY7plKAVJqcBc",
-    //   type: "sheet",
-    //   name: "seattle",
-    //   dataDir: "public/data/chains",
-    // },
-    // {
-    //   fileId: "1IpL7ggGz0iyGLyHbo99TCihUpIJx_hH_5pM5gPfwIVU",
-    //   type: "sheet",
-    //   name: "sf",
-    //   dataDir: "public/data/chains",
+    //   dataDir: "censusdata",
     // },
   ],
   /**
@@ -122,20 +44,53 @@ module.exports = {
    * a "value" - the "key" determines the URL, the "value" is what is saved at
    * that URL.
    */
-  createAPI(data) {
-    // const groupByMetro = d3
-    //   .nest()
-    //   .key((d) => d.msa)
-    //   .entries(data.data.census);
-    const groupByMetro = Array.from(
-      d3.group(data.data.census, (d) => d.msa),
-      ([key, values]) => ({ key, values })
-    );
+  apis: [
+    {
+      inputDir: "censusdata",
+      outputDir: "census",
+      createAPI: function (data) {
+        const groupByMetro = Array.from(
+          d3.group(data.data, (d) => d.msa),
+          ([key, values]) => ({ key, values })
+        );
+        groupByMetro.forEach((d) => {
+          d.values = d.values.reduce((obj, item) => {
+            obj[`${item.state_fips}${item.county_fips}${item.tract_code}`] =
+              item.med_hh_inc;
+            return obj;
+          }, {});
+        });
 
-    groupByMetro.forEach((d) => {
-      d.key = `census/${d.key}`;
-    });
+        // console.log(groupByMetro);
 
-    return groupByMetro;
-  },
+        return groupByMetro;
+      },
+    },
+    {
+      inputDir: "mapdata",
+      outputDir: "maps",
+      createAPI: function (data) {
+        const acc = {};
+        for (const file in data) {
+          const metro = file.slice(0, -3);
+          const round = file.slice(-2);
+          if (acc[metro]) {
+            acc[metro][round] = data[file].reduce((obj, item) => {
+              obj[item.GEOID] = +item.n;
+              return obj;
+            }, {});
+          } else {
+            acc[metro] = {};
+            acc[metro][round] = data[file].reduce((obj, item) => {
+              obj[item.GEOID] = +item.n;
+              return obj;
+            }, {});
+          }
+        }
+        return Object.keys(acc).map((d) => {
+          return { key: d, values: acc[d] };
+        });
+      },
+    },
+  ],
 };

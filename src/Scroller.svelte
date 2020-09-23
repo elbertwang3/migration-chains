@@ -4,10 +4,9 @@
   import Select from "svelte-select";
   import Copy from "./Copy.svelte";
   import Map from "./Map.svelte";
-  import TriangleLayer from "./TriangleLayer.svelte";
   // import Slope from "./Slope.svelte";
   import { geoConicConformal, geoTransverseMercator } from "d3-geo";
-  import { metros } from "./data/data.json";
+  import metros from "./data/metros.json";
   import { csv } from "d3-fetch";
   import { ordinal } from "journalize";
   import { sum } from "d3-array";

@@ -13,7 +13,7 @@
     schemeRdYlBu,
     schemeBrBG,
   } from "d3-scale-chromatic";
-  import { max, group } from "d3-array";
+  import { sum, max, group } from "d3-array";
   // import { nest } from "d3-collection";
 
   export let width = 200;
@@ -40,18 +40,18 @@
   );
   $: svgPath = geoPath().projection(projection);
 
-  let censusDict = census.reduce((obj, item) => {
-    obj[`${item.state_fips}${item.county_fips}${item.tract_code}`] =
-      item.med_hh_inc;
-    return obj;
-  }, {});
+  // let censusDict = census.reduce((obj, item) => {
+  //   obj[`${item.state_fips}${item.county_fips}${item.tract_code}`] =
+  //     item.med_hh_inc;
+  //   return obj;
+  // }, {});
 
   let colorScale = scaleQuantile()
-    .domain(Object.values(censusDict))
+    .domain(Object.values(census))
     .range(schemeBrBG[11].slice(3, 8));
 
   $: heightScale = scaleLinear()
-    .domain([0, max(Object.values(chains[`c${round}`]))])
+    .domain([0, max(Object.values(chains[`c0`]))])
     .range([0, chartHeight / 2]);
 
   // function handleClick(d) {
@@ -102,13 +102,13 @@
   </defs>
   <g transform={`translate(${margin.left}, ${margin.top})`}>
     <g class="g-tracts">
-      {#if features && censusDict}
+      {#if features && census}
         {#each features.features as d}
           <path
             class={`tract`}
             d={svgPath(d)}
             stroke="#e0e0e0"
-            fill={censusDict[d.properties.GEOID] ? colorScale(censusDict[d.properties.GEOID]) : '#d3d3d3'} />
+            fill={census[d.properties.GEOID] ? colorScale(census[d.properties.GEOID]) : '#d3d3d3'} />
         {/each}
       {/if}
     </g>

@@ -78,73 +78,76 @@ function logDownload(fileName, fileId, color) {
   console.log(colors[color](`Downloaded \`${fileName}\` (${fileId})`));
 }
 
-const getAllCsvs = () => {
-  const dir = "mapdata/";
-  const fileExtWhitelist = [".csv"];
-  return readdir(dir).then((files) => {
-    return files.reduce((acc, fileName) => {
-      const filePath = `${dir}${fileName}`;
-      const fileExt = path.extname(fileName);
-      return fileExtWhitelist.includes(fileExt)
-        ? acc.concat({ filePath, fileName })
-        : acc;
-    }, []);
-  });
-};
+// const getAllCsvs = () => {
+//   const dir = "mapdata/";
+//   const fileExtWhitelist = [".csv"];
+//   return readdir(dir).then((files) => {
+//     return files.reduce((acc, fileName) => {
+//       const filePath = `${dir}${fileName}`;
+//       const fileExt = path.extname(fileName);
+//       return fileExtWhitelist.includes(fileExt)
+//         ? acc.concat({ filePath, fileName })
+//         : acc;
+//     }, []);
+//   });
+// };
 
-const acc = {};
-async function addToDict(file) {
-  const { filePath, fileName } = file;
-  const [metro, round] = path.basename(fileName, ".csv").split("_");
-  if (acc[metro]) {
-    const fileData = await readFile(filePath);
-    parse(
-      fileData,
-      {
-        columns: true,
-        trim: true,
-      },
-      (err, rows) => {
-        acc[metro][round] = rows.reduce((obj, item) => {
-          obj[item.GEOID] = +item.n;
-          return obj;
-        }, {});
-      }
-    );
-  } else {
-    acc[metro] = {};
-    const fileData = await readFile(filePath);
-    parse(
-      fileData,
-      {
-        columns: true,
-        trim: true,
-      },
-      (err, rows) => {
-        acc[metro][round] = rows.reduce((obj, item) => {
-          obj[item.GEOID] = +item.n;
-          return obj;
-        }, {});
-      }
-    );
-  }
-}
+// const acc = {};
+// async function addToDict(file) {
+//   const { filePath, fileName } = file;
+//   const metro = path.basename(fileName, ".csv").slice(0, -3);
+//   const round = path.basename(fileName, ".csv").slice(-2);
+//   console.log(metro);
+//   console.log(round);
+//   if (acc[metro]) {
+//     const fileData = await readFile(filePath);
+//     parse(
+//       fileData,
+//       {
+//         columns: true,
+//         trim: true,
+//       },
+//       (err, rows) => {
+//         acc[metro][round] = rows.reduce((obj, item) => {
+//           obj[item.GEOID] = +item.n;
+//           return obj;
+//         }, {});
+//       }
+//     );
+//   } else {
+//     acc[metro] = {};
+//     const fileData = await readFile(filePath);
+//     parse(
+//       fileData,
+//       {
+//         columns: true,
+//         trim: true,
+//       },
+//       (err, rows) => {
+//         acc[metro][round] = rows.reduce((obj, item) => {
+//           obj[item.GEOID] = +item.n;
+//           return obj;
+//         }, {});
+//       }
+//     );
+//   }
+// }
 
-async function buildDict(csvs) {
-  for (const csv of csvs) {
-    await addToDict(csv);
-  }
-  console.log("Done!");
-  return acc;
-}
+// async function buildDict(csvs) {
+//   for (const csv of csvs) {
+//     await addToDict(csv);
+//   }
+//   console.log("Done!");
+//   return acc;
+// }
 
-async function outputCsvs(dict) {
-  for (const metro in dict) {
-    await fs.outputJson(`public/data/maps/${metro}.json`, dict[metro], {
-      spaces: 2,
-    });
-  }
-}
+// async function outputCsvs(dict) {
+//   for (const metro in dict) {
+//     await fs.outputJson(`public/data/maps/${metro}.json`, dict[metro], {
+//       spaces: 2,
+//     });
+//   }
+// }
 
-// getData().catch(console.error);
-getAllCsvs().then(buildDict).then(outputCsvs);
+getData().catch(console.error);
+// getAllCsvs().then(buildDict).then(outputCsvs);

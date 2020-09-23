@@ -1,0 +1,50 @@
+[
+  {
+    "label": "Atlanta",
+    "value": "atlanta"
+  },
+  {
+    "label": "Boston",
+    "value": "boston"
+  },
+  {
+    "label": "Chicago",
+    "value": "chicago"
+  },
+  {
+    "label": "Dallas",
+    "value": "dallas"
+  },
+  {
+    "label": "Washington D.C.",
+    "value": "dc_metro"
+  },
+  {
+    "label": "Denver",
+    "value": "denver"
+  },
+  {
+    "label": "Houston",
+    "value": "houston"
+  },
+  {
+    "label": "Minneapolis",
+    "value": "mpls"
+  },
+  {
+    "label": "New York City",
+    "value": "nyc"
+  },
+  {
+    "label": "Philadelphia",
+    "value": "philadelphia"
+  },
+  {
+    "label": "Seattle",
+    "value": "seattle"
+  },
+  {
+    "label": "San Francisco",
+    "value": "sf"
+  }
+]

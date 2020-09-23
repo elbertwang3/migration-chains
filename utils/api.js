@@ -3,17 +3,18 @@ const path = require("path");
 // packages
 const fs = require("fs-extra");
 const quaff = require("quaff");
+const config = require("../project.config");
+const { apis } = config;
 
-// internal
-const { createAPI } = require("../project.config");
 // const { isProductionEnv } = require("../env");
 // const paths = require("../paths");
 
-async function deployData() {
+async function deployData(api) {
   // skip this all if there's no createAPI function declared in project config
+  const { inputDir, outputDir, createAPI } = api;
   if (!createAPI) return;
 
-  const data = await quaff("./src/data");
+  const data = await quaff(inputDir);
   const output = createAPI(data);
 
   // if we get nothing meaningful back, stop here
@@ -24,15 +25,21 @@ async function deployData() {
   }
 
   //const dir = path.join(isProductionEnv ? "./public" : "./public", "api");
-  const dir = "./public/data";
+  const dir = `./public/data/${outputDir}`;
 
   await Promise.all(
     output.map(({ key, values }) => {
       console.log(path.format({ dir, name: key, ext: ".json" }));
-      //console.log(values);
       fs.outputJSON(path.format({ dir, name: key, ext: ".json" }), values);
     })
   );
 }
 
-deployData().catch(console.error);
+if (Array.isArray(apis) && apis.length >= 1) {
+  apis.forEach((d) => {
+    deployData(d).catch(console.error);
+  });
+} else {
+  console.log("not an array");
+  return;
+}
