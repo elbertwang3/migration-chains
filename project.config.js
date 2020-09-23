@@ -123,10 +123,14 @@ module.exports = {
    * that URL.
    */
   createAPI(data) {
-    const groupByMetro = d3
-      .nest()
-      .key((d) => d.msa)
-      .entries(data.data.census);
+    // const groupByMetro = d3
+    //   .nest()
+    //   .key((d) => d.msa)
+    //   .entries(data.data.census);
+    const groupByMetro = Array.from(
+      d3.group(data.data.census, (d) => d.msa),
+      ([key, values]) => ({ key, values })
+    );
 
     groupByMetro.forEach((d) => {
       d.key = `census/${d.key}`;

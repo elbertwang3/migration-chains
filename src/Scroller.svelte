@@ -4,13 +4,22 @@
   import Select from "svelte-select";
   import Copy from "./Copy.svelte";
   import Map from "./Map.svelte";
+  import TriangleLayer from "./TriangleLayer.svelte";
   // import Slope from "./Slope.svelte";
   import { geoConicConformal, geoTransverseMercator } from "d3-geo";
-  import { metros, rounds } from "./data/data.json";
+  import { metros } from "./data/data.json";
+  import { csv } from "d3-fetch";
+  import { ordinal } from "journalize";
+  import { sum } from "d3-array";
+  import App from "./App.svelte";
 
   const elements = {
     text: Copy,
   };
+
+  const mapRounds = [...Array(8).keys()].map((d) => {
+    return { label: ordinal(d + 1, true), value: `c${d}` };
+  });
 
   export let value;
   let mapWidth;
@@ -18,10 +27,7 @@
   // let slopeWidth;
   // let slopeHeight;
 
-  let selectedRound = {
-    label: "first",
-    value: "c0c1",
-  };
+  let selectedRound = 0;
 
   let selectedMetro = {
     label: "Seattle",
@@ -64,7 +70,11 @@
       .rotate([120 + 30 / 60], 0),
   };
 
-  $: promise = fetchData(selectedMetro.value);
+  $: metroDataPromise = fetchMetroData(selectedMetro.value);
+  // $: migrationDataPromise = fetchMigrationData(
+  //   selectedMetro.value,
+  //   selectedRound
+  // );
 
   function setupScroller() {
     const scroller = new Scroller({
@@ -75,7 +85,7 @@
 
     // the `enter` event is triggered every time a scene crosses the threshold
     scroller.on("scene:enter", (d) => {
-      selectedRound = rounds[d.index];
+      selectedRound = d.index;
       d.element.classList.add("active");
     });
 
@@ -84,29 +94,39 @@
       d.element.classList.remove("active");
     });
 
-    scroller.on("init", () => {
-      console.log("Everything is ready to go!");
-    });
+    // scroller.on("init", () => {
+    //   console.log("Everything is ready to go!");
+    // });
 
     // starts up the IntersectionObserver
     scroller.init();
   }
 
-  async function fetchData(metro) {
-    const chains = await fetch(`./data/chains/${metro}.json`);
+  async function fetchMetroData(metro) {
+    const chains = await fetch(`./data/maps/${metro}.json`);
     const tracts = await fetch(`./data/tracts/${metro}.json`);
     const census = await fetch(`./data/census/${metro}.json`);
     const chainData = await chains.json();
     const tractData = await tracts.json();
     const censusData = await census.json();
-    const currProjection = projections[metro];
+    // const currProjection = projections[metro];
     return {
       chains: chainData,
       tracts: tractData,
       census: censusData,
-      projection: currProjection,
+      // projection: currProjection,
     };
   }
+
+  // async function fetchMigrationData(metro, round) {
+  //   const migrations = await csv(`./data/maps/${metro}_c${round}.csv`);
+  //   const roundTotal = sum(migrations, (d) => +d.n);
+  //   const migrationData = migrations.reduce((obj, item) => {
+  //     obj[item.GEOID] = +item.n / roundTotal;
+  //     return obj;
+  //   }, {});
+  //   return migrationData;
+  // }
 
   onMount(async () => {
     console.log("on mount");
@@ -122,6 +142,7 @@
     position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1fr) 300px;
+    grid-gap: 1rem;
   }
   .scroll-scenes {
     /* grid-column-start: 1;
@@ -220,7 +241,9 @@
     <div class="input-text">
       This is the
       <div class="dropdown dropdown-round">
-        <Select items={rounds} bind:selectedValue={selectedRound} />
+        <Select
+          items={mapRounds}
+          bind:selectedValue={mapRounds[selectedRound]} />
       </div>
       round of the migration chain for
       <div class="dropdown dropdown-metro">
@@ -233,19 +256,24 @@
         class="map"
         bind:clientWidth={mapWidth}
         bind:clientHeight={mapHeight}>
-        {#await promise then data}
+        {#await metroDataPromise}
+          <!-- promise is pending -->
+        {:then metroData}
+          <!-- promise was fulfilled -->
           <Map
             width={mapWidth}
             height={mapHeight}
-            {data}
-            round={selectedRound.value} />
+            {metroData}
+            round={selectedRound}
+            projection={projections[selectedMetro.value]}>
+            <!-- <TriangleLayer tracts={metroData.tracts} {migrationData} /> -->
+          </Map>
         {/await}
       </div>
       <!-- <div class="arc">
         <img src="arc.png" />
       </div> -->
     </div>
-
   </div>
   <div class="scroll-scenes">
     {#each value.scenes as scene}

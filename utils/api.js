@@ -10,7 +10,6 @@ const { createAPI } = require("../project.config");
 // const paths = require("../paths");
 
 async function deployData() {
-  console.log("getting inside here");
   // skip this all if there's no createAPI function declared in project config
   if (!createAPI) return;
 

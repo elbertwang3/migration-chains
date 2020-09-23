@@ -1,9 +1,32 @@
 // native
 const path = require("path");
+const fs = require("fs-extra");
+const parse = require("csv-parse");
+const { promisify } = require("util");
+if (typeof fetch !== "function") {
+  global.fetch = require("node-fetch-polyfill");
+}
+// const { csvParse } = require("d3-dsv");
+const readdir = promisify(fs.readdir);
+const readFile = promisify(fs.readFile);
+
+// const data = require("../public/data/maps/sf_c7.csv");
+// console.log(data);
+
+// async function testCsv() {
+//   const fileData = await readFile("public/data/maps/sf_c7.csv");
+//   await parse(fileData, {
+//     columns: true,
+//     trim: true,
+//   }).then((rows) => {
+//     console.log(rows);
+//     acc[metro][round] = rows;
+//   });
+// }
+// testCsv();
 
 // packages
 const colors = require("ansi-colors");
-const fs = require("fs-extra");
 
 // internal
 const { google } = require("googleapis");
@@ -55,4 +78,73 @@ function logDownload(fileName, fileId, color) {
   console.log(colors[color](`Downloaded \`${fileName}\` (${fileId})`));
 }
 
-getData().catch(console.error);
+const getAllCsvs = () => {
+  const dir = "mapdata/";
+  const fileExtWhitelist = [".csv"];
+  return readdir(dir).then((files) => {
+    return files.reduce((acc, fileName) => {
+      const filePath = `${dir}${fileName}`;
+      const fileExt = path.extname(fileName);
+      return fileExtWhitelist.includes(fileExt)
+        ? acc.concat({ filePath, fileName })
+        : acc;
+    }, []);
+  });
+};
+
+const acc = {};
+async function addToDict(file) {
+  const { filePath, fileName } = file;
+  const [metro, round] = path.basename(fileName, ".csv").split("_");
+  if (acc[metro]) {
+    const fileData = await readFile(filePath);
+    parse(
+      fileData,
+      {
+        columns: true,
+        trim: true,
+      },
+      (err, rows) => {
+        acc[metro][round] = rows.reduce((obj, item) => {
+          obj[item.GEOID] = +item.n;
+          return obj;
+        }, {});
+      }
+    );
+  } else {
+    acc[metro] = {};
+    const fileData = await readFile(filePath);
+    parse(
+      fileData,
+      {
+        columns: true,
+        trim: true,
+      },
+      (err, rows) => {
+        acc[metro][round] = rows.reduce((obj, item) => {
+          obj[item.GEOID] = +item.n;
+          return obj;
+        }, {});
+      }
+    );
+  }
+}
+
+async function buildDict(csvs) {
+  for (const csv of csvs) {
+    await addToDict(csv);
+  }
+  console.log("Done!");
+  return acc;
+}
+
+async function outputCsvs(dict) {
+  for (const metro in dict) {
+    await fs.outputJson(`public/data/maps/${metro}.json`, dict[metro], {
+      spaces: 2,
+    });
+  }
+}
+
+// getData().catch(console.error);
+getAllCsvs().then(buildDict).then(outputCsvs);
