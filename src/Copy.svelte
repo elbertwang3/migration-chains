@@ -3,7 +3,7 @@
 </script>
 
 <style>
-  .copy {
+  .copyy {
     max-width: 600px;
     margin: 0 auto 1rem auto;
     /* font-family: "Open Sans"; */
@@ -12,4 +12,4 @@
   }
 </style>
 
-<p class="copy">{value}</p>
+<p class="copyy">{value}</p>

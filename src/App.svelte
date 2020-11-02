@@ -1,12 +1,15 @@
 <script>
   import Copy from "./Copy.svelte";
   import Scroller from "./Scroller.svelte";
-  import Slope from "./Slope.svelte";
-  import text from "./text.json";
+  import Slope from "./JoyPlotContainer.svelte";
+  import text from "./data/text.json";
+  import JoyPlotContainer from "./JoyPlotContainer.svelte";
+
+  console.log(Scroller);
   const elements = {
     text: Copy,
     scroller: Scroller,
-    slope: Slope,
+    "joyplot-container": JoyPlotContainer,
   };
 </script>
 

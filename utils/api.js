@@ -25,12 +25,17 @@ async function deployData(api) {
   }
 
   //const dir = path.join(isProductionEnv ? "./public" : "./public", "api");
-  const dir = `./public/data/${outputDir}`;
+  // const dir = `./public/data/${outputDir}`;
 
   await Promise.all(
     output.map(({ key, values }) => {
-      console.log(path.format({ dir, name: key, ext: ".json" }));
-      fs.outputJSON(path.format({ dir, name: key, ext: ".json" }), values);
+      // console.log(
+      //   `path: ${path.format({ dir: outputDir, name: key, ext: ".json" })}`
+      // );
+      fs.outputJSON(
+        path.format({ dir: outputDir, name: key, ext: ".json" }),
+        values
+      );
     })
   );
 }

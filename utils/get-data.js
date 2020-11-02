@@ -35,6 +35,7 @@ const { sheetToData } = require("@newswire/sheet-to-data");
 const config = require("../project.config");
 
 async function getData() {
+  console.log("get data getting called");
   const auth = await google.auth.getClient({
     scopes: [
       "https://www.googleapis.com/auth/documents.readonly",

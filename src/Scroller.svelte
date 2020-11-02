@@ -204,34 +204,6 @@
   }
   .map {
     height: 100%;
-
-    /* width: 200px;
-    margin: 0 auto 1rem auto; */
-    /* position: absolute;
-    top: 0;
-    left: 0; 
-    z-index: 2;
-    width: 100px;
-    height: 100px; */
-  }
-
-  .slope {
-    width: 100%;
-    /* height: 700px; */
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-  .title {
-    text-align: center;
-    font-weight: 600;
-  }
-  .arc {
-    display: grid;
-    place-items: center;
-  }
-  img {
-    width: 100%;
-    margin: auto;
   }
 </style>
 
@@ -264,14 +236,9 @@
             height={mapHeight}
             {metroData}
             round={selectedRound}
-            projection={projections[selectedMetro.value]}>
-            <!-- <TriangleLayer tracts={metroData.tracts} {migrationData} /> -->
-          </Map>
+            projection={projections[selectedMetro.value]} />
         {/await}
       </div>
-      <!-- <div class="arc">
-        <img src="arc.png" />
-      </div> -->
     </div>
   </div>
   <div class="scroll-scenes">
