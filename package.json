@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@newswire/scroller": "^0.1.0",
-    "d3": "^6.1.1",
+    "d3": "^7.6.1",
     "d3-array": "^2.7.1",
     "d3-geo-projection": "^2.9.0",
     "journalize": "^2.4.0",
